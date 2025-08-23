@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Router - Smart AI Routing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .prompt-input {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .task-select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .route-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .route-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .route-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .example-prompts {
+            margin-top: 20px;
+        }
+
+        .example-prompts h3 {
+            color: #555;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .example-btn {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .example-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .results-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .result-card.error {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .result-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .response-text {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .stats-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        .model-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .model-openai { background: #10a37f; color: white; }
+        .model-anthropic { background: #d97706; color: white; }
+        .model-groq { background: #f59e0b; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AI Model Router</h1>
+            <p>Smart routing with automatic cost optimization and fallbacks</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card input-section">
+                <h2>💬 Enter Your Prompt</h2>
+                <textarea 
+                    id="promptInput" 
+                    class="prompt-input" 
+                    placeholder="Ask anything! The router will automatically select the best model for your task..."
+                ></textarea>
+                
+                <div class="controls">
+                    <select id="taskSelect" class="task-select">
+                        <option value="">Auto-detect task</option>
+                        <option value="coding">Coding</option>
+                        <option value="creative">Creative</option>
+                        <option value="analysis">Analysis</option>
+                        <option value="simple_qa">Simple Q&A</option>
+                        <option value="complex_reasoning">Complex Reasoning</option>
+                    </select>
+                    
+                    <button id="routeBtn" class="route-btn">
+                        Route to Best Model
+                    </button>
+                </div>
+
+                <div class="example-prompts">
+                    <h3>💡 Try these examples:</h3>
+                    <div class="example-btn" data-prompt="Write a Python function to reverse a string">🐍 Python coding</div>
+                    <div class="example-btn" data-prompt="What's the capital of Japan?">❓ Simple question</div>
+                    <div class="example-btn" data-prompt="Write a haiku about AI">🎨 Creative writing</div>
+                    <div class="example-btn" data-prompt="Compare renewable energy sources">📊 Analysis</div>
+                    <div class="example-btn" data-prompt="Explain quantum computing in detail">🧠 Complex reasoning</div>
+                </div>
+            </div>
+
+            <div class="card results-section">
+                <h2>📊 Results</h2>
+                <div id="resultsContainer">
+                    <p style="color: #666; text-align: center; padding: 40px;">
+                        Enter a prompt and click "Route to Best Model" to see the magic! ✨
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <h2>📈 Session Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRequests">0</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCost">$0.00</div>
+                    <div class="stat-label">Total Cost</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgLatency">0.0s</div>
+                    <div class="stat-label">Avg Latency</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="successRate">100%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock AI Router for demo purposes
+        class MockAIRouter {
+            constructor() {
+                this.metrics = [];
+                this.models = [
+                    { name: 'gpt-4o-mini', provider: 'openai', cost: 0.00015, strengths: ['simple_qa', 'creative'] },
+                    { name: 'claude-3-haiku', provider: 'anthropic', cost: 0.00025, strengths: ['simple_qa', 'creative'] },
+                    { name: 'llama-3.1-8b', provider: 'groq', cost: 0.00005, strengths: ['simple_qa', 'coding'] },
+                    { name: 'mixtral-8x7b', provider: 'groq', cost: 0.00024, strengths: ['coding', 'analysis'] },
+                    { name: 'claude-3.5-sonnet', provider: 'anthropic', cost: 0.003, strengths: ['coding', 'creative', 'analysis'] },
+                    { name: 'llama-3.1-70b', provider: 'groq', cost: 0.00059, strengths: ['coding', 'analysis', 'complex_reasoning'] },
+                ];
+            }
+
+            classifyTask(prompt) {
+                const p = prompt.toLowerCase();
+                if (['code', 'python', 'javascript', 'function', 'debug'].some(k => p.includes(k))) return 'coding';
+                if (['story', 'poem', 'creative', 'imagine'].some(k => p.includes(k))) return 'creative';
+                if (['analyze', 'compare', 'evaluate', 'assessment'].some(k => p.includes(k))) return 'analysis';
+                if (p.length > 200 && ['explain', 'why', 'how'].some(k => p.includes(k))) return 'complex_reasoning';
+                return 'simple_qa';
+            }
+
+            selectModel(taskType) {
+                const suitable = this.models.filter(m => m.strengths.includes(taskType));
+                if (suitable.length > 0) {
+                    return suitable.sort((a, b) => a.cost - b.cost)[0]; // Cheapest first
+                }
+                return this.models[0]; // Fallback
+            }
+
+            async route(prompt, taskType = null) {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+
+                const detectedTask = taskType || this.classifyTask(prompt);
+                const selectedModel = this.selectModel(detectedTask);
+                
+                // Simulate response
+                const responses = {
+                    'coding': '```python\ndef reverse_string(s):\n    return s[::-1]\n```\n\nThis function uses Python\'s slice notation to reverse the string efficiently.',
+                    'creative': 'In circuits bright and data streams,\nWhere silicon thoughts flow free,\nAI dreams electric dreams,\nOf what tomorrow\'s world could be.',
+                    'analysis': 'Renewable energy sources each have distinct advantages:\n\n• Solar: Abundant, decreasing costs, but intermittent\n• Wind: Mature technology, scalable, weather dependent\n• Hydro: Reliable baseline power, environmental concerns\n• Geothermal: Consistent output, geographically limited',
+                    'simple_qa': 'The capital of Japan is Tokyo. It\'s been the capital since 1868 and is one of the world\'s largest metropolitan areas.',
+                    'complex_reasoning': 'Quantum computing leverages quantum mechanical phenomena like superposition and entanglement to process information fundamentally differently than classical computers...'
+                };
+
+                const tokensUsed = 50 + Math.floor(Math.random() * 200);
+                const cost = (tokensUsed / 1000) * selectedModel.cost;
+                const latency = 1 + Math.random() * 2;
+
+                const result = {
+                    success: Math.random() > 0.05, // 95% success rate
+                    model_used: selectedModel.name,
+                    provider: selectedModel.provider,
+                    task_type: detectedTask,
+                    response: responses[detectedTask] || 'This is a sample response from the AI model.',
+                    cost: cost,
+                    latency: latency,
+                    tokens_used: tokensUsed
+                };
+
+                // Store metrics
+                this.metrics.push({
+                    ...result,
+                    timestamp: new Date()
+                });
+
+                return result;
+            }
+
+            getStats() {
+                if (this.metrics.length === 0) {
+                    return {
+                        total_requests: 0,
+                        total_cost: 0,
+                        avg_latency: 0,
+                        success_rate: 100
+                    };
+                }
+
+                const successful = this.metrics.filter(m => m.success);
+                return {
+                    total_requests: this.metrics.length,
+                    total_cost: this.metrics.reduce((sum, m) => sum + m.cost, 0),
+                    avg_latency: successful.reduce((sum, m) => sum + m.latency, 0) / successful.length,
+                    success_rate: (successful.length / this.metrics.length) * 100
+                };
+            }
+        }
+
+        // Initialize router and UI
+        const router = new MockAIRouter();
+        const promptInput = document.getElementById('promptInput');
+        const taskSelect = document.getElementById('taskSelect');
+        const routeBtn = document.getElementById('routeBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        // Example prompt handlers
+        document.querySelectorAll('.example-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                promptInput.value = btn.dataset.prompt;
+                promptInput.focus();
+            });
+        });
+
+        // Route button handler
+        routeBtn.addEventListener('click', async () => {
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt!');
+                return;
+            }
+
+            // Show loading state
+            routeBtn.disabled = true;
+            routeBtn.innerHTML = '<div class="loading"></div>Routing...';
+
+            try {
+                const taskType = taskSelect.value || null;
+                const result = await router.route(prompt, taskType);
+
+                // Display result
+                displayResult(result, prompt);
+
+                // Update stats
+                updateStats();
+
+            } catch (error) {
+                displayError(error.message);
+            } finally {
+                // Reset button
+                routeBtn.disabled = false;
+                routeBtn.innerHTML = 'Route to Best Model';
+            }
+        });
+
+        // Enter key to submit
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                routeBtn.click();
+            }
+        });
+
+        function displayResult(result, prompt) {
+            const modelClass = `model-${result.provider}`;
+            const modelIndicator = `<span class="${modelClass} model-indicator">${result.model_used}</span>`;
+            
+            const resultHtml = `
+                <div class="result-card ${result.success ? '' : 'error'}">
+                    <div class="result-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">Model</div>
+                            <div class="meta-value">${result.model_used}${modelIndicator}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Task Type</div>
+                            <div class="meta-value">${result.task_type.replace('_', ' ')}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Cost</div>
+                            <div class="meta-value">$${result.cost.toFixed(4)}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Latency</div>
+                            <div class="meta-value">${result.latency.toFixed(2)}s</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Tokens</div>
+                            <div class="meta-value">${result.tokens_used}</div>
+                        </div>
+                    </div>
+                    
+                    <div><strong>Your prompt:</strong> "${prompt}"</div>
+                    <br>
+                    <div><strong>Response:</strong></div>
+                    <div class="response-text">${result.response}</div>
+                </div>
+            `;
+
+            resultsContainer.innerHTML = resultHtml + resultsContainer.innerHTML;
+        }
+
+        function displayError(error) {
+            const errorHtml = `
+                <div class="result-card error">
+                    <h3>❌ Error</h3>
+                    <p>${error}</p>
+                </div>
+            `;
+            resultsContainer.innerHTML = errorHtml + resultsContainer.innerHTML;
+        }
+
+        function updateStats() {
+            const stats = router.getStats();
+            
+            document.getElementById('totalRequests').textContent = stats.total_requests;
+            document.getElementById('totalCost').textContent = `$${stats.total_cost.toFixed(4)}`;
+            document.getElementById('avgLatency').textContent = `${stats.avg_latency.toFixed(1)}s`;
+            document.getElementById('successRate').textContent = `${stats.success_rate.toFixed(0)}%`;
+        }
+    </script>
+</body>
+</html>
