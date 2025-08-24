@@ -228,7 +228,7 @@ Contributions welcome!
 
 ## License
 
-MIT License - 
+Apache License - 
 
 ##  Acknowledgments
 
